@@ -1,5 +1,6 @@
 package com.example.swissborg_tech_challange.network
 
+import android.util.Log
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -9,6 +10,9 @@ import dagger.hilt.android.components.ViewModelComponent
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.accept
 import io.ktor.client.request.header
@@ -18,6 +22,8 @@ import io.ktor.client.request.url
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
+import io.ktor.http.parametersOf
+import io.ktor.http.takeFrom
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -68,13 +74,16 @@ class KtorHttpClient @Inject constructor(private val ktor: io.ktor.client.HttpCl
         block: HttpRequestBuilder.() -> Unit = {},
     ): JsonElement = ktor.request {
         this.method = method
-        this.url(url)
+        url {
+            takeFrom(url)
+            parameters.forEach {
+                encodedParameters.append(it.first, it.second ?: "")
+            }
+        }
 
         headers.forEach { header(it.first, it.second) }
         contentType(ContentType.Application.Json)
         accept(ContentType.Application.Json)
-
-        parameters.forEach { parameter(it.first, it.second) }
 
         block(this)
     }.body()
@@ -90,6 +99,14 @@ object HttpModule {
         expectSuccess = true
         install(ContentNegotiation) {
             json(json)
+        }
+        install(Logging) {
+            logger = object : Logger {
+                override fun log(message: String) {
+                    Log.d("HTTP", message)
+                }
+            }
+            level = LogLevel.BODY
         }
     }
 

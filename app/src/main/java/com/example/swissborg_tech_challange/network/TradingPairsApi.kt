@@ -23,25 +23,22 @@ interface TradingPairsApi {
 class TradingPairsBitfinex @Inject constructor(private val httpClient: HttpClient) : TradingPairsApi {
 
     override suspend fun tradingPairs(fiat: Fiat): List<TradingPair> = coroutineScope {
-        val tradingPairsDeferred = async { pairExchangeList(fiat) }
-        val cryptoLabelsDeferred = async { currencyLabelMap() }
+        val tradingPairs = async { pairExchangeList(fiat) }
+        val cryptoLabels = async { currencyLabelMap() }
 
-        val tradingPairs = tradingPairsDeferred.await().takeIf { it.isNotEmpty() } ?: return@coroutineScope emptyList()
-        val cryptoLabels = cryptoLabelsDeferred.await()
-
-        val tickers = tickers(symbols = tradingPairs)
+        val tickers = tickers(symbols = tradingPairs.await())
             .mapNotNull { obj ->
-                val symbol = obj.getOrNull(0)?.takeIf { it.jsonPrimitive.isString }?.toString() ?: return@mapNotNull null
+                val symbol = obj.getOrNull(0)?.jsonPrimitive?.content ?: return@mapNotNull null
                 val change = obj.getOrNull(6)?.jsonPrimitive?.floatOrNull ?: return@mapNotNull null
                 val price = obj.getOrNull(7)?.jsonPrimitive?.floatOrNull ?: return@mapNotNull null
 
-                val crypto = cryptoFromSymbol(symbol, fiat, cryptoLabels)
+                val crypto = cryptoFromSymbol(symbol, fiat, cryptoLabels.await())
 
                 TradingPair(
                     crypto,
                     fiat,
-                    BigDecimal.valueOf(change.toDouble()),
-                    BigDecimal.valueOf(price.toDouble() * 100 /* % */),
+                    BigDecimal.valueOf(price.toDouble()),
+                    BigDecimal.valueOf(change.toDouble() * 100 /* % */),
                 )
             }
 
@@ -55,13 +52,14 @@ class TradingPairsBitfinex @Inject constructor(private val httpClient: HttpClien
             ?: emptyList()
 
     private suspend fun currencyLabelMap(): Map<String, String> =
-        httpClient.get<List<List<Pair<String, String>>>>(endpoint("/conf/pub:map:currency:label"))
+        httpClient.get<List<List<List<String>>>>(endpoint("/conf/pub:map:currency:label"))
             .firstOrNull()
-            ?.toMap()
+            ?.filter { it.size == 2 }
+            ?.associate { it[0] to it[1] }
             ?: emptyMap()
 
     private suspend fun tickers(symbols: List<String>): List<List<JsonElement>> =
-        httpClient.get(endpoint("/tickers"), parameters = listOf("symbols" to symbols.joinToString(",")))
+        httpClient.get(endpoint("/tickers"), parameters = listOf("symbols" to symbols.joinToString(",") { "t$it" }))
 
     private fun endpoint(name: String): String = "$BASE_URL/${name.trimStart('/')}"
 

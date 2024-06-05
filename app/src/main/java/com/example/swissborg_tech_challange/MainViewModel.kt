@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.swissborg_tech_challange.data.Fiat
 import com.example.swissborg_tech_challange.data.TradingPair
 import com.example.swissborg_tech_challange.network.TradingPairsApi
+import com.example.swissborg_tech_challange.ui.screen.DashboardState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -28,6 +28,9 @@ class MainViewModel @Inject constructor(private val api: TradingPairsApi) : View
     private val _state: MutableStateFlow<MainState> = MutableStateFlow(MainState.Idle)
     val state: StateFlow<MainState> = _state.asStateFlow()
 
+    private val fetchTradingPairsMutex: Mutex = Mutex()
+    private var fetchTradingPairsJob: Job? = null
+
     init {
         viewModelScope.launch {
             while (isActive) {
@@ -39,19 +42,52 @@ class MainViewModel @Inject constructor(private val api: TradingPairsApi) : View
 
     fun refresh() {
         viewModelScope.launch {
+            _state.update { state ->
+                state.copy(
+                    dashboard = state.dashboard.copy(
+                        isRefreshing = true,
+                    ),
+                )
+            }
+
             fetchTradingPairs()
+
+            _state.update { state ->
+                state.copy(
+                    dashboard = state.dashboard.copy(
+                        isRefreshing = false
+                    )
+                )
+            }
         }
     }
 
-    private val fetchTradingPairsMutex: Mutex = Mutex()
-    private var fetchTradingPairsJob: Job? = null
+    fun filter(query: String?) {
+        viewModelScope.launch {
+            val query = query?.takeIf { it.isNotBlank() }
+            _state.update { state ->
+                state.copy(
+                    dashboard = state.dashboard.copy(
+                        tradingPairs = state.tradingPairs.filterWith(query),
+                        filter = query,
+                    ),
+                )
+            }
+        }
+    }
+
     private suspend fun fetchTradingPairs() = coroutineScope {
         val job = fetchTradingPairsMutex.withLock {
             fetchTradingPairsJob ?: launch {
                 try {
                     val tradingPairs = api.tradingPairs(fiat)
-                    _state.update {
-                        it.copy(tradingPairs = tradingPairs)
+                    _state.update { state ->
+                        state.copy(
+                            tradingPairs = tradingPairs,
+                            dashboard = state.dashboard.copy(
+                                tradingPairs = tradingPairs.filterWith(state.dashboard.filter),
+                            ),
+                        )
                     }
                 } catch (e: Throwable) {
                     // TODO: set error
@@ -63,14 +99,22 @@ class MainViewModel @Inject constructor(private val api: TradingPairsApi) : View
 
         job.join()
     }
+
+    private fun List<TradingPair>.filterWith(query: String?): List<TradingPair> =
+        if (query != null) filter { it.matches(query) } else this
+
+    private fun TradingPair.matches(query: String): Boolean =
+        crypto.name.lowercase().contains(query.lowercase()) || crypto.symbol.lowercase().contains(query.lowercase())
 }
 
 data class MainState(
     val tradingPairs: List<TradingPair>,
+    val dashboard: DashboardState,
 ) {
     companion object {
         val Idle: MainState = MainState(
             tradingPairs = emptyList(),
+            dashboard = DashboardState.Idle,
         )
     }
 }
