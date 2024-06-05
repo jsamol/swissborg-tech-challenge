@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.swissborg_tech_challange.data.Fiat
 import com.example.swissborg_tech_challange.data.TradingPair
+import com.example.swissborg_tech_challange.network.NetworkState
 import com.example.swissborg_tech_challange.network.TradingPairsApi
 import com.example.swissborg_tech_challange.ui.screen.DashboardState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +23,10 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val api: TradingPairsApi) : ViewModel() {
+class MainViewModel @Inject constructor(
+    private val api: TradingPairsApi,
+    private val networkState: NetworkState,
+) : ViewModel() {
     private val fiat: Fiat = Fiat.Usd
 
     private val _state: MutableStateFlow<MainState> = MutableStateFlow(MainState.Idle)
@@ -36,6 +40,14 @@ class MainViewModel @Inject constructor(private val api: TradingPairsApi) : View
             while (isActive) {
                 fetchTradingPairs()
                 delay(5.seconds)
+            }
+        }
+
+        viewModelScope.launch {
+            networkState.isOnline.collect {
+                _state.update { state ->
+                    state.copy(isOnline = it)
+                }
             }
         }
     }
@@ -109,11 +121,13 @@ class MainViewModel @Inject constructor(private val api: TradingPairsApi) : View
 
 data class MainState(
     val tradingPairs: List<TradingPair>,
+    val isOnline: Boolean,
     val dashboard: DashboardState,
 ) {
     companion object {
         val Idle: MainState = MainState(
             tradingPairs = emptyList(),
+            isOnline = true,
             dashboard = DashboardState.Idle,
         )
     }

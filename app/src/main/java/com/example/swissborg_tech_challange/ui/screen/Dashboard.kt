@@ -2,6 +2,7 @@
 
 package com.example.swissborg_tech_challange.ui.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +19,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ElevatedCard
@@ -38,8 +38,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.swissborg_tech_challange.data.Crypto
 import com.example.swissborg_tech_challange.data.Fiat
 import com.example.swissborg_tech_challange.data.TradingPair
@@ -87,9 +89,13 @@ fun Dashboard(
             .nestedScroll(pullToRefreshState.nestedScrollConnection)
             .then(modifier)
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
             SearchBar(
                 query = state.filter ?: "",
                 onQueryChange = { filter(it) },
