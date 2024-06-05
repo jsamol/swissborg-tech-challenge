@@ -4,8 +4,8 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 fun BigDecimal.round(floatingPoints: Int? = null): BigDecimal {
-    val scale = floatingPoints ?: if (this >= BigDecimal.ONE) 2 else 8
-    return setScale(scale, RoundingMode.CEILING).stripTrailingZeros()
+    val scale = floatingPoints ?: if (abs() >= BigDecimal.ONE) 2 else 8
+    return setScale(scale, RoundingMode.HALF_UP).stripTrailingZeros()
 }
 
 fun BigDecimal.toString(withSign: Boolean): String {
