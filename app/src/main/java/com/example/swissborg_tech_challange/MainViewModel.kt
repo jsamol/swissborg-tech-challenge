@@ -1,5 +1,6 @@
 package com.example.swissborg_tech_challange
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.swissborg_tech_challange.data.Fiat
@@ -33,7 +34,7 @@ class MainViewModel @Inject constructor(
     val state: StateFlow<MainState> = _state.asStateFlow()
 
     private val fetchTradingPairsMutex: Mutex = Mutex()
-    private var fetchTradingPairsJob: Job? = null
+    private var fetchTradingPairsDeferred: Job? = null
 
     init {
         viewModelScope.launch {
@@ -90,23 +91,30 @@ class MainViewModel @Inject constructor(
 
     private suspend fun fetchTradingPairs() = coroutineScope {
         val job = fetchTradingPairsMutex.withLock {
-            fetchTradingPairsJob ?: launch {
+            fetchTradingPairsDeferred ?: launch {
                 try {
-                    val tradingPairs = api.tradingPairs(fiat)
-                    _state.update { state ->
-                        state.copy(
-                            tradingPairs = tradingPairs,
-                            dashboard = state.dashboard.copy(
-                                tradingPairs = tradingPairs.filterWith(state.dashboard.filter),
-                            ),
-                        )
-                    }
-                } catch (e: Throwable) {
-                    // TODO: set error
+                    runCatching { api.tradingPairs(fiat) }
+                        .onSuccess { tradingPairs ->
+                            _state.update { state ->
+                                state.copy(
+                                    tradingPairs = tradingPairs,
+                                    failures = 0,
+                                    dashboard = state.dashboard.copy(
+                                        tradingPairs = tradingPairs.filterWith(state.dashboard.filter),
+                                    ),
+                                )
+                            }
+                        }
+                        .onFailure {
+                            Log.d("MainViewModel", "fetchTradingPairs failed", it)
+                            _state.update { state ->
+                                state.copy(failures = state.failures + 1)
+                            }
+                        }
                 } finally {
-                    fetchTradingPairsMutex.withLock { fetchTradingPairsJob = null }
+                    fetchTradingPairsMutex.withLock { fetchTradingPairsDeferred = null }
                 }
-            }.also { fetchTradingPairsJob = it }
+            }.also { fetchTradingPairsDeferred = it }
         }
 
         job.join()
@@ -122,12 +130,14 @@ class MainViewModel @Inject constructor(
 data class MainState(
     val tradingPairs: List<TradingPair>,
     val isOnline: Boolean,
+    val failures: Int,
     val dashboard: DashboardState,
 ) {
     companion object {
         val Idle: MainState = MainState(
             tradingPairs = emptyList(),
             isOnline = true,
+            failures = 0,
             dashboard = DashboardState.Idle,
         )
     }
