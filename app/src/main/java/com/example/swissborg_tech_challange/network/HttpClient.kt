@@ -3,8 +3,9 @@ package com.example.swissborg_tech_challange.network
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.Reusable
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
+import dagger.hilt.android.components.ViewModelComponent
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -80,13 +81,11 @@ class KtorHttpClient @Inject constructor(private val ktor: io.ktor.client.HttpCl
 }
 
 @Module
-@InstallIn(ActivityComponent::class)
-abstract class HttpModule {
-
-    @Binds
-    abstract fun bindHttpClientProvider(provider: KtorHttpClient): HttpClientProvider
+@InstallIn(ViewModelComponent::class)
+object HttpModule {
 
     @Provides
+    @Reusable
     fun provideKtor(json: Json): io.ktor.client.HttpClient = io.ktor.client.HttpClient(CIO) {
         expectSuccess = true
         install(ContentNegotiation) {
@@ -95,8 +94,17 @@ abstract class HttpModule {
     }
 
     @Provides
+    @Reusable
     fun provideJson(): Json = Json {
         ignoreUnknownKeys = true
         prettyPrint = false
     }
+}
+
+@Module
+@InstallIn(ViewModelComponent::class)
+abstract class HttpBindingModule {
+    @Binds
+    @Reusable
+    abstract fun bindHttpClientProvider(provider: KtorHttpClient): HttpClientProvider
 }

@@ -5,8 +5,9 @@ import com.example.swissborg_tech_challange.data.Fiat
 import com.example.swissborg_tech_challange.data.TradingPair
 import dagger.Binds
 import dagger.Module
+import dagger.Reusable
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
+import dagger.hilt.android.components.ViewModelComponent
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.JsonElement
@@ -40,7 +41,7 @@ class TradingPairsBitfinex @Inject constructor(private val httpClient: HttpClien
                     crypto,
                     fiat,
                     BigDecimal.valueOf(change.toDouble()),
-                    BigDecimal.valueOf(price.toDouble()),
+                    BigDecimal.valueOf(price.toDouble() * 100 /* % */),
                 )
             }
 
@@ -80,9 +81,10 @@ class TradingPairsBitfinex @Inject constructor(private val httpClient: HttpClien
 }
 
 @Module
-@InstallIn(ActivityComponent::class)
-abstract class TradingPairsApiModule {
+@InstallIn(ViewModelComponent::class)
+abstract class TradingPairsApiBindingModule {
 
     @Binds
+    @Reusable
     abstract fun bindTradingPairsApi(bitfinex: TradingPairsBitfinex): TradingPairsApi
 }
