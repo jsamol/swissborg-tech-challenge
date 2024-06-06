@@ -8,7 +8,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -29,7 +29,9 @@ class HttpClientTest {
 
     @Test
     fun `should use provider to call HTTP GET and decode response`() = runTest{
+        val url = "https://test.com"
         val text = UUID.randomUUID().toString()
+
         coEvery { provider.get(any(), any(), any()) } returns Json.parseToJsonElement(
             // language=json
             """
@@ -39,10 +41,9 @@ class HttpClientTest {
             """.trimIndent()
         )
 
-        val url = "https://test.com"
-        val response = httpClient.get<ExampleResponse>(url)
+        val response = httpClient.get<MockResponse>(url)
 
-        Assert.assertEquals(text, response.text)
+        assertEquals(text, response.text)
         coVerify { provider.get(url, emptyList(), emptyList()) }
     }
 
@@ -54,7 +55,7 @@ class HttpClientTest {
         val headers = listOf(
             "Authorization" to "Bearer ${UUID.randomUUID()}",
         )
-        httpClient.get<Unit>(url, headers)
+        httpClient.get<Unit>(url, headers = headers)
 
         coVerify { provider.get(url, headers, emptyList()) }
     }
@@ -73,5 +74,5 @@ class HttpClientTest {
     }
 
     @Serializable
-    data class ExampleResponse(val text: String)
+    data class MockResponse(val text: String)
 }
