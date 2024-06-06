@@ -8,11 +8,12 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class HttpClientTest {
     @get:Rule
@@ -29,7 +30,7 @@ class HttpClientTest {
     }
 
     @Test
-    fun `should use provider to call HTTP GET and decode response`() = runTest{
+    fun `should use provider to call HTTP GET and decode response`() = runTest {
         val url = "https://test.com"
         val text = UUID.randomUUID().toString()
 
@@ -49,7 +50,7 @@ class HttpClientTest {
     }
 
     @Test
-    fun `should use provider to call HTTP GET with additional headers`() = runTest{
+    fun `should use provider to call HTTP GET with additional headers`() = runTest {
         coEvery { provider.get(any(), any(), any()) } returns JsonNull
 
         val url = "https://test.com"
@@ -62,7 +63,7 @@ class HttpClientTest {
     }
 
     @Test
-    fun `should use provider to call HTTP GET with additional parameters`() = runTest{
+    fun `should use provider to call HTTP GET with additional parameters`() = runTest {
         coEvery { provider.get(any(), any(), any()) } returns JsonNull
 
         val url = "https://test.com"
@@ -72,6 +73,17 @@ class HttpClientTest {
         httpClient.get<Unit>(url, parameters = parameters)
 
         coVerify { provider.get(url, emptyList(), parameters) }
+    }
+
+    @Test
+    fun `should fail on provider failing`() = runTest {
+        val exception = RuntimeException("Error")
+        coEvery { provider.get(any(), any(), any()) } throws exception
+
+        val url = "https://test.com"
+        assertFailsWith<RuntimeException>(exception.message) {
+            httpClient.get<Unit>(url)
+        }
     }
 
     @Serializable

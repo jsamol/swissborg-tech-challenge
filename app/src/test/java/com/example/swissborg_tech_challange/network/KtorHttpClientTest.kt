@@ -10,9 +10,9 @@ import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class KtorHttpClientTest {
 

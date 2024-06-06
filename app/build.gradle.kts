@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.kotlinx.serialziation.json)
 
     // Test
+    testImplementation(libs.kotlin.test)
     testImplementation(libs.junit)
     testImplementation(libs.mockk.android)
     testImplementation(libs.mockk.agent)

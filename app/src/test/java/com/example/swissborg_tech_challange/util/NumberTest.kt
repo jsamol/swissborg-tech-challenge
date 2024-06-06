@@ -1,8 +1,8 @@
 package com.example.swissborg_tech_challange.util
 
-import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.math.BigDecimal
+import kotlin.test.assertEquals
 
 class NumberTest {
 
