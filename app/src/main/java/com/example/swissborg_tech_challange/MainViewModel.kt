@@ -8,6 +8,7 @@ import com.example.swissborg_tech_challange.data.TradingPair
 import com.example.swissborg_tech_challange.network.NetworkState
 import com.example.swissborg_tech_challange.network.ApiClient
 import com.example.swissborg_tech_challange.ui.screen.DashboardState
+import com.example.swissborg_tech_challange.util.debug
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
@@ -36,14 +37,16 @@ class MainViewModel @Inject constructor(
     private val fetchTradingPairsMutex: Mutex = Mutex()
     private var fetchTradingPairsDeferred: Job? = null
 
-    init {
+    fun pollTradingPairs() {
         viewModelScope.launch {
             while (isActive) {
                 fetchTradingPairs()
                 delay(5.seconds)
             }
         }
+    }
 
+    fun observeNetworkState() {
         viewModelScope.launch {
             networkState.isOnline.collect {
                 _state.update { state ->
@@ -106,7 +109,7 @@ class MainViewModel @Inject constructor(
                             }
                         }
                         .onFailure {
-                            Log.d("MainViewModel", "fetchTradingPairs failed", it)
+                            debug("MainViewModel", "fetchTradingPairs failed", it)
                             _state.update { state ->
                                 state.copy(failures = state.failures + 1)
                             }
