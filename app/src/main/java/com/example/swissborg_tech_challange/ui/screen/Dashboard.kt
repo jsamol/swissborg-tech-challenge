@@ -2,7 +2,6 @@
 
 package com.example.swissborg_tech_challange.ui.screen
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,13 +37,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.swissborg_tech_challange.data.Crypto
 import com.example.swissborg_tech_challange.data.Fiat
 import com.example.swissborg_tech_challange.data.TradingPair
+import com.example.swissborg_tech_challange.ui.theme.PaddingContentHorizontal
+import com.example.swissborg_tech_challange.ui.theme.PaddingContentVertical
+import com.example.swissborg_tech_challange.ui.theme.SpaceM
+import com.example.swissborg_tech_challange.ui.theme.SpaceS
+import com.example.swissborg_tech_challange.ui.theme.SpaceXS
 import com.example.swissborg_tech_challange.ui.theme.SwissborgtechchallangeTheme
 import com.example.swissborg_tech_challange.util.round
 import com.example.swissborg_tech_challange.util.toString
@@ -94,7 +95,7 @@ fun Dashboard(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = PaddingContentHorizontal)
         ) {
             SearchBar(
                 query = state.filter ?: "",
@@ -145,8 +146,8 @@ private fun TradingPairList(
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             state = lazyListState,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(SpaceM),
+            contentPadding = PaddingValues(vertical = PaddingContentVertical),
             modifier = Modifier
                 .then(modifier)
                 .fillMaxSize(),
@@ -160,7 +161,7 @@ private fun TradingPairList(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(16.dp),
+                    .padding(SpaceM),
             ) {
                 FloatingActionButton(
                     onClick = {
@@ -184,16 +185,16 @@ private fun TradingPairRow(modifier: Modifier = Modifier, tradingPair: TradingPa
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(SpaceS),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 imageVector = Icons.Default.AddCircle, // placeholder icon
                 contentDescription = "${tradingPair.crypto.symbol} icon",
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(SpaceM))
             TradingPairLabel(modifier = Modifier.weight(1f), tradingPair = tradingPair)
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(SpaceM))
             TradingPairPrice(tradingPair = tradingPair)
         }
     }
@@ -209,7 +210,7 @@ private fun TradingPairLabel(modifier: Modifier = Modifier, tradingPair: Trading
             text = tradingPair.crypto.name,
             fontWeight = FontWeight.Bold,
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(SpaceXS))
         Text(
             text = tradingPair.crypto.symbol,
             color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.75f),
@@ -230,7 +231,7 @@ private fun TradingPairPrice(modifier: Modifier = Modifier, tradingPair: Trading
             text = "${tradingPair.fiat.symbol} ${price.toString(withSign = false)}",
             fontWeight = FontWeight.Bold,
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(SpaceXS))
         Text(
             text = "${change.toString(withSign = true)}%",
             color = (
