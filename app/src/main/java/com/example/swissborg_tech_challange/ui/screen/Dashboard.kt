@@ -18,12 +18,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
@@ -111,6 +113,16 @@ fun Dashboard(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search icon",
                     )
+                },
+                trailingIcon = {
+                    if (state.filter?.isNotEmpty() == true) {
+                        IconButton(onClick = { filter(null) }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear icon",
+                            )
+                        }
+                    }
                 },
                 content = {},
             )
@@ -280,6 +292,27 @@ fun DashboardPreview() {
                     ),
                 ),
                 filter = null,
+                isRefreshing = false,
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DashboardFilterPreview() {
+    SwissborgtechchallangeTheme {
+        Dashboard(
+            state = DashboardState(
+                tradingPairs = listOf(
+                    TradingPair(
+                        crypto = Crypto("Ethereum", "ETH"),
+                        fiat = Fiat.Usd,
+                        price = BigDecimal.valueOf(3_805),
+                        change = BigDecimal.valueOf(-0.626796),
+                    ),
+                ),
+                filter = "eth",
                 isRefreshing = false,
             )
         )
