@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.swissborg_tech_challange.data.Fiat
 import com.example.swissborg_tech_challange.data.TradingPair
 import com.example.swissborg_tech_challange.network.NetworkState
-import com.example.swissborg_tech_challange.network.TradingPairsApi
+import com.example.swissborg_tech_challange.network.ApiClient
 import com.example.swissborg_tech_challange.ui.screen.DashboardState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -25,7 +25,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val api: TradingPairsApi,
+    private val api: ApiClient,
     private val networkState: NetworkState,
 ) : ViewModel() {
     private val fiat: Fiat = Fiat.Usd

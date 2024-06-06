@@ -16,11 +16,11 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.math.BigDecimal
 import javax.inject.Inject
 
-interface TradingPairsApi {
+interface ApiClient {
     suspend fun tradingPairs(fiat: Fiat): List<TradingPair>
 }
 
-class TradingPairsBitfinex @Inject constructor(private val httpClient: HttpClient) : TradingPairsApi {
+class BitfinexApiClient @Inject constructor(private val httpClient: HttpClient) : ApiClient {
 
     override suspend fun tradingPairs(fiat: Fiat): List<TradingPair> = coroutineScope {
         val tradingPairs = async { pairExchangeList(fiat) }
@@ -80,9 +80,9 @@ class TradingPairsBitfinex @Inject constructor(private val httpClient: HttpClien
 
 @Module
 @InstallIn(ViewModelComponent::class)
-abstract class TradingPairsApiBindingModule {
+abstract class ApiClientBindingModule {
 
     @Binds
     @Reusable
-    abstract fun bindTradingPairsApi(bitfinex: TradingPairsBitfinex): TradingPairsApi
+    abstract fun bindApiClient(bitfinex: BitfinexApiClient): ApiClient
 }
