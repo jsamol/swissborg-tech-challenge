@@ -1,12 +1,11 @@
 package com.example.swissborg_tech_challange
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.swissborg_tech_challange.data.Fiat
 import com.example.swissborg_tech_challange.data.TradingPair
-import com.example.swissborg_tech_challange.network.NetworkState
 import com.example.swissborg_tech_challange.network.ApiClient
+import com.example.swissborg_tech_challange.network.NetworkState
 import com.example.swissborg_tech_challange.ui.screen.DashboardState
 import com.example.swissborg_tech_challange.util.debug
 import dagger.hilt.android.lifecycle.HiltViewModel

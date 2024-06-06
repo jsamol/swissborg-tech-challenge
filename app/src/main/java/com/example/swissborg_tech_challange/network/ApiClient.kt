@@ -12,8 +12,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.floatOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import java.math.BigDecimal
 import javax.inject.Inject
