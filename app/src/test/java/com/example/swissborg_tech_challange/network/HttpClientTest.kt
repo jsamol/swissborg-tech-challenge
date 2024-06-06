@@ -20,6 +20,7 @@ class HttpClientTest {
 
     @MockK
     lateinit var provider: HttpClientProvider
+
     lateinit var httpClient: HttpClient
 
     @Before
